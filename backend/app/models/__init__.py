@@ -1,5 +1,6 @@
-"""ORM models. Import every model module here so Alembic autogenerate sees it.
+"""ORM models. Import every model module here so Alembic autogenerate sees it."""
 
-Example once the users table exists:
-    from app.models.user import User  # noqa: F401
-"""
+from app.models.game import Game, GameStatus
+from app.models.user import User
+
+__all__ = ["Game", "GameStatus", "User"]
