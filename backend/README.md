@@ -25,6 +25,14 @@ Swagger UI: http://localhost:8000/docs. The React Native app reads the same cont
 
 Tests use the `showup_test` database so they never touch dev data. Postgres creates it from `docker/initdb/01-test-db.sql` the first time the volume is created.
 
+## CI
+
+Every pull request runs `.github/workflows/backend.yml`: lint, format check, all migrations on an empty Postgres 17, a check that models and migrations agree, then the tests. Run the same thing locally before you push:
+
+```bash
+uv run ruff check . && uv run ruff format --check . && uv run alembic check && uv run pytest
+```
+
 ## Folder map
 
 ```
