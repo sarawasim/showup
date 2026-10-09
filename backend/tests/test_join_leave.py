@@ -15,13 +15,13 @@ def _game_id(db: Session, index: int) -> int:
 
 
 # Seed facts used below:
-#   game 0: BCIT Gym basketball, host Maya, 10 spots, min rep 60, players Jordan, Sam, Alex
+#   game 0: BCIT Gym basketball, host Maya, 10 spots, min rep 80, players Jordan, Sam, Alex
 #   game 1: Bonsor basketball, host Jordan, 8 spots, min rep 0, player Maya
 #   game 2: Central Park soccer, host Sam, Riley was removed
 #   game 5: badminton, host Maya, 4 spots, FULL
 #   game 6: played (in the past)
 #   game 7: cancelled
-#   reputations: Maya 92, Jordan 74, Sam 50, Riley 38, Alex 61
+#   reputations: everyone 100 except Sam, 75 (one no-show at the played game)
 
 
 def test_join_takes_a_spot(client: TestClient, db: Session, auth_headers: Headers) -> None:
@@ -101,9 +101,10 @@ def test_host_cannot_join_own_game(client: TestClient, db: Session, auth_headers
 
 def test_low_reputation_is_403(client: TestClient, db: Session, auth_headers: Headers) -> None:
     seed(db)
-    game_id = _game_id(db, 0)  # needs 60; Riley has 38
+    game_id = _game_id(db, 0)  # needs 80; Sam has 75 after a no-show
+    client.delete(f"/games/{game_id}/join", headers=auth_headers("Sam"))  # Sam is seeded in
 
-    response = client.post(f"/games/{game_id}/join", headers=auth_headers("Riley"))
+    response = client.post(f"/games/{game_id}/join", headers=auth_headers("Sam"))
 
     assert response.status_code == 403
     assert "reputation" in response.json()["detail"]

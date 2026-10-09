@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import GameStatus
+from app.reputation import MAX_MIN_REPUTATION
 
 # The sport picker on the Create Post screen. Lowercase, matched case-insensitively.
 ALLOWED_SPORTS = (
@@ -30,21 +31,29 @@ class GameOut(BaseModel):
     venue: str
     address: str
     starts_at: datetime
+    duration_minutes: int
     spots: int
     # Sent as a number (5.0), not a string, so the app can show it without parsing.
     cost: float
     min_reputation: int
+    fallback_min_reputation: int | None
+    fallback_hours_before_start: int | None
     status: GameStatus
+    updated_at: datetime
 
 
 class PlayerOut(BaseModel):
     """A player on a game's roster. Only what the Game Details screen shows."""
 
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
     name: str
     reputation: int
+    # Games this player was marked present at. With is_new, it tells a host how much to
+    # trust the reputation number.
+    games_played: int
+    # True until the player has enough marked or hosted games; the app then shows "New"
+    # instead of the score.
+    is_new: bool
 
 
 class GameDetailOut(GameOut):
@@ -52,11 +61,14 @@ class GameDetailOut(GameOut):
 
     `spots` is the number of player places the host offers, not counting the host.
     `spots_left` is `spots` minus the players who have joined.
+    `effective_min_reputation` is the requirement that applies right now, after any fallback.
     """
 
     host_name: str
+    host_reputation: int
     players: list[PlayerOut]
     spots_left: int
+    effective_min_reputation: int
 
 
 def _check_sport(value: str) -> str:
@@ -83,9 +95,12 @@ class GameCreate(BaseModel):
     venue: str = Field(min_length=1, max_length=200)
     address: str = Field(min_length=1, max_length=300)
     starts_at: datetime
+    duration_minutes: int = Field(default=90, ge=15, le=480)
     spots: int = Field(ge=2, le=30)
     cost: Decimal = Field(default=Decimal(0), ge=0, max_digits=6, decimal_places=2)
-    min_reputation: int = Field(default=0, ge=0, le=100)
+    min_reputation: int = Field(default=0, ge=0, le=MAX_MIN_REPUTATION)
+    fallback_min_reputation: int | None = Field(default=None, ge=0, le=MAX_MIN_REPUTATION)
+    fallback_hours_before_start: int | None = Field(default=None, ge=1, le=168)
 
     _sport = field_validator("sport")(_check_sport)
     _starts_at = field_validator("starts_at")(_check_future)
@@ -100,9 +115,12 @@ class GameUpdate(BaseModel):
     venue: str | None = Field(default=None, min_length=1, max_length=200)
     address: str | None = Field(default=None, min_length=1, max_length=300)
     starts_at: datetime | None = None
+    duration_minutes: int | None = Field(default=None, ge=15, le=480)
     spots: int | None = Field(default=None, ge=2, le=30)
     cost: Decimal | None = Field(default=None, ge=0, max_digits=6, decimal_places=2)
-    min_reputation: int | None = Field(default=None, ge=0, le=100)
+    min_reputation: int | None = Field(default=None, ge=0, le=MAX_MIN_REPUTATION)
+    fallback_min_reputation: int | None = Field(default=None, ge=0, le=MAX_MIN_REPUTATION)
+    fallback_hours_before_start: int | None = Field(default=None, ge=1, le=168)
 
     @field_validator("sport")
     @classmethod

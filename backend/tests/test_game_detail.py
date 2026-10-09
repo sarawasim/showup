@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Game, SignupStatus, User
-from app.seed import GAMES, SIGNUPS, USERS, seed
+from app.seed import ATTENDANCE, GAMES, SIGNUPS, USERS, seed
 
 
 def _game_id(db: Session, index: int) -> int:
@@ -19,10 +19,10 @@ def test_detail_has_host_players_and_spots_left(client: TestClient, db: Session)
     body = client.get(f"/games/{game_id}").json()
 
     assert body["id"] == game_id
-    assert body["host_name"] == USERS[GAMES[0][0]][0]
-    assert [p["name"] for p in body["players"]] == [USERS[u][0] for u in joined]
+    assert body["host_name"] == USERS[GAMES[0][0]]
+    assert [p["name"] for p in body["players"]] == [USERS[u] for u in joined]
     assert body["spots_left"] == GAMES[0][6] - len(joined)
-    assert set(body["players"][0]) == {"id", "name", "reputation"}
+    assert set(body["players"][0]) == {"id", "name", "reputation", "games_played", "is_new"}
 
 
 def test_detail_excludes_removed_players(client: TestClient, db: Session) -> None:
@@ -57,5 +57,10 @@ def test_detail_unknown_game_is_404(client: TestClient, db: Session) -> None:
 def test_seed_counts_include_signups(db: Session) -> None:
     counts = seed(db)
 
-    assert counts == {"users": len(USERS), "games": len(GAMES), "signups": len(SIGNUPS)}
+    assert counts == {
+        "users": len(USERS),
+        "games": len(GAMES),
+        "signups": len(SIGNUPS),
+        "attendance": len(ATTENDANCE),
+    }
     assert db.scalar(select(User).where(User.name == "Maya")) is not None

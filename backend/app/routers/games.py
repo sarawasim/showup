@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from app.deps import CurrentUser, DbDep
 from app.models import Game, GameStatus, Signup, SignupStatus, User
+from app.reputation import effective_min_reputation, player_stats
 from app.schemas.game import GameCreate, GameDetailOut, GameOut, GameUpdate, PlayerOut
 
 router = APIRouter(prefix="/games", tags=["games"])
@@ -52,12 +53,24 @@ def _detail(db: DbDep, game_id: int) -> GameDetailOut:
         (s for s in game.signups if s.status == SignupStatus.JOINED),
         key=lambda s: (s.created_at, s.id),
     )
-    players = [PlayerOut.model_validate(s.user) for s in joined]
+    stats = player_stats(db, [s.user_id for s in joined])
+    players = [
+        PlayerOut(
+            id=s.user.id,
+            name=s.user.name,
+            reputation=s.user.reputation,
+            games_played=stats[s.user_id]["games_played"],
+            is_new=stats[s.user_id]["is_new"],
+        )
+        for s in joined
+    ]
     return GameDetailOut(
         **GameOut.model_validate(game).model_dump(),
         host_name=game.host.name,
+        host_reputation=game.host.reputation,
         players=players,
         spots_left=max(game.spots - len(players), 0),
+        effective_min_reputation=effective_min_reputation(game),
     )
 
 
@@ -97,7 +110,8 @@ def list_games(
 
 @router.get("/{game_id}", response_model=GameDetailOut)
 def get_game(game_id: int, db: DbDep) -> GameDetailOut:
-    """One game with its host name and the players who have joined, oldest signup first."""
+    """One game with its host, the players who have joined (oldest signup first), and the
+    reputation requirement that applies right now."""
     return _detail(db, game_id)
 
 
@@ -163,10 +177,11 @@ def join_game(game_id: int, db: DbDep, user: CurrentUser) -> GameDetailOut:
         raise HTTPException(status.HTTP_409_CONFLICT, "Game is cancelled")
     if game.starts_at <= datetime.now(UTC):
         raise HTTPException(status.HTTP_409_CONFLICT, "Game has already started")
-    if user.reputation < game.min_reputation:
+    required = effective_min_reputation(game)
+    if user.reputation < required:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            f"This game needs a reputation of {game.min_reputation}; yours is {user.reputation}",
+            f"This game needs a reputation of {required}; yours is {user.reputation}",
         )
 
     signup = db.scalar(select(Signup).where(Signup.game_id == game.id, Signup.user_id == user.id))
