@@ -1,10 +1,10 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AppNavigator } from './AppNavigator';
+import { theme } from '../theme';
 
 export function RootNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={theme}>
       <AppNavigator />
     </NavigationContainer>
   );
