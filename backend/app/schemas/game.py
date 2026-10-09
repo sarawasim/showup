@@ -26,32 +26,23 @@ class GameOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    host_id: int = Field(description="User id of the host; only they can edit, cancel or mark")
-    sport: str = Field(description="Lowercase, one of the allowed sports")
+    host_id: int
+    sport: str
     venue: str
     address: str
-    starts_at: datetime = Field(
-        description="Kickoff, UTC with offset; convert to local time for display"
-    )
+    starts_at: datetime
     duration_minutes: int
-    spots: int = Field(description="Player places on offer, not counting the host")
+    spots: int
     # Sent as a number (5.0), not a string, so the app can show it without parsing.
-    cost: float = Field(
-        description="Venue or drop-in fee per player, for information only. 0 = free"
-    )
-    min_reputation: int = Field(description="Lowest reputation allowed to join. 0 = anyone")
-    fallback_min_reputation: int | None = Field(
-        description="Lower requirement that applies from fallback_hours_before_start hours before "
-        "kickoff; null = no drop"
-    )
-    fallback_hours_before_start: int | None = Field(
-        description="When the fallback kicks in, hours before kickoff; null = no drop"
-    )
+    cost: float
+    min_reputation: int
+    fallback_min_reputation: int | None
+    fallback_hours_before_start: int | None
     status: GameStatus = Field(
         description="open = taking players, full = no spots left, cancelled = hidden from lists, "
         "played = kickoff passed and the host has marked attendance"
     )
-    updated_at: datetime = Field(description="Last change to any field; use to detect edits")
+    updated_at: datetime
 
 
 class PlayerOut(BaseModel):
