@@ -11,6 +11,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
 if TYPE_CHECKING:
+    from app.models.attendance import Attendance
+    from app.models.signup import Signup
     from app.models.user import User
 
 
@@ -56,3 +58,9 @@ class Game(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     host: Mapped[User] = relationship(back_populates="hosted_games")
+    signups: Mapped[list[Signup]] = relationship(
+        back_populates="game", cascade="all, delete-orphan"
+    )
+    attendance: Mapped[list[Attendance]] = relationship(
+        back_populates="game", cascade="all, delete-orphan"
+    )

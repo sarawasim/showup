@@ -10,6 +10,7 @@ from app.db import Base
 
 if TYPE_CHECKING:
     from app.models.game import Game
+    from app.models.signup import Signup
 
 
 class User(Base):
@@ -24,3 +25,4 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     hosted_games: Mapped[list[Game]] = relationship(back_populates="host")
+    signups: Mapped[list[Signup]] = relationship(back_populates="user")
