@@ -20,8 +20,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(100))
-    # 0 to 100. Everyone starts in the middle; attendance moves it.
-    reputation: Mapped[int] = mapped_column(default=50, server_default="50")
+    # Show-up rate, 0 to 100. Everyone starts at 100 and is shown as "New" until they have
+    # history; see app/reputation.py for the formula and the cushion.
+    reputation: Mapped[int] = mapped_column(default=100, server_default="100")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     hosted_games: Mapped[list[Game]] = relationship(back_populates="host")

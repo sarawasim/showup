@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -25,6 +25,10 @@ class Attendance(Base):
     showed_up: Mapped[bool]
     marked_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     marked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # A player who disagrees with a no-show can dispute once, within the marking window.
+    # The host sees the note and may flip the mark. Both null means never disputed.
+    disputed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    dispute_note: Mapped[str | None] = mapped_column(String(300))
 
     game: Mapped[Game] = relationship(back_populates="attendance")
     user: Mapped[User] = relationship(foreign_keys=[user_id])
