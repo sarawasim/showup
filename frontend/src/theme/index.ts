@@ -1,6 +1,11 @@
-import { colors } from './colors';
-import { spacing } from './spacing';
-import { typography } from './typography';
+import { DefaultTheme } from "@react-navigation/native";
+import { colors } from "./colors";
+import { spacing } from "./spacing";
+import { typography } from "./typography";
 
-export const theme = { colors, spacing, typography };
-export type Theme = typeof theme;
+export const theme = {
+	...DefaultTheme,
+	colors,
+	spacing,
+	typography,
+};
