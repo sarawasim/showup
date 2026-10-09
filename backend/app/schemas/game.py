@@ -38,7 +38,10 @@ class GameOut(BaseModel):
     min_reputation: int
     fallback_min_reputation: int | None
     fallback_hours_before_start: int | None
-    status: GameStatus
+    status: GameStatus = Field(
+        description="open = taking players, full = no spots left, cancelled = hidden from lists, "
+        "played = kickoff passed and the host has marked attendance"
+    )
     updated_at: datetime
 
 
@@ -94,7 +97,25 @@ def _check_future(value: datetime) -> datetime:
 class GameCreate(BaseModel):
     """Body of POST /games. Validation mirrors the games table and the Create Post screen."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {
+                    "sport": "basketball",
+                    "venue": "BCIT Gym",
+                    "address": "3700 Willingdon Ave, Burnaby",
+                    "starts_at": "2026-10-20T18:00:00-07:00",
+                    "duration_minutes": 90,
+                    "spots": 10,
+                    "cost": "5.00",
+                    "min_reputation": 80,
+                    "fallback_min_reputation": 70,
+                    "fallback_hours_before_start": 10,
+                }
+            ]
+        },
+    )
 
     sport: str
     venue: str = Field(min_length=1, max_length=200)
