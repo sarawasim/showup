@@ -26,20 +26,32 @@ class GameOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    host_id: int
-    sport: str
+    host_id: int = Field(description="User id of the host; only they can edit, cancel or mark")
+    sport: str = Field(description="Lowercase, one of the allowed sports")
     venue: str
     address: str
-    starts_at: datetime
+    starts_at: datetime = Field(
+        description="Kickoff, UTC with offset; convert to local time for display"
+    )
     duration_minutes: int
-    spots: int
+    spots: int = Field(description="Player places on offer, not counting the host")
     # Sent as a number (5.0), not a string, so the app can show it without parsing.
-    cost: float
-    min_reputation: int
-    fallback_min_reputation: int | None
-    fallback_hours_before_start: int | None
-    status: GameStatus
-    updated_at: datetime
+    cost: float = Field(
+        description="Venue or drop-in fee per player, for information only. 0 = free"
+    )
+    min_reputation: int = Field(description="Lowest reputation allowed to join. 0 = anyone")
+    fallback_min_reputation: int | None = Field(
+        description="Lower requirement that applies from fallback_hours_before_start hours before "
+        "kickoff; null = no drop"
+    )
+    fallback_hours_before_start: int | None = Field(
+        description="When the fallback kicks in, hours before kickoff; null = no drop"
+    )
+    status: GameStatus = Field(
+        description="open = taking players, full = no spots left, cancelled = hidden from lists, "
+        "played = kickoff passed and the host has marked attendance"
+    )
+    updated_at: datetime = Field(description="Last change to any field; use to detect edits")
 
 
 class PlayerOut(BaseModel):
@@ -94,7 +106,25 @@ def _check_future(value: datetime) -> datetime:
 class GameCreate(BaseModel):
     """Body of POST /games. Validation mirrors the games table and the Create Post screen."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {
+                    "sport": "basketball",
+                    "venue": "BCIT Gym",
+                    "address": "3700 Willingdon Ave, Burnaby",
+                    "starts_at": "2026-10-20T18:00:00-07:00",
+                    "duration_minutes": 90,
+                    "spots": 10,
+                    "cost": "5.00",
+                    "min_reputation": 80,
+                    "fallback_min_reputation": 70,
+                    "fallback_hours_before_start": 10,
+                }
+            ]
+        },
+    )
 
     sport: str
     venue: str = Field(min_length=1, max_length=200)
