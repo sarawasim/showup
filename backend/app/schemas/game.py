@@ -50,10 +50,12 @@ class PlayerOut(BaseModel):
     reputation: int
     # Games this player was marked present at. With is_new, it tells a host how much to
     # trust the reputation number.
-    games_played: int
+    games_played: int = Field(description="Games this player was marked present at")
     # True until the player has enough marked or hosted games; the app then shows "New"
     # instead of the score.
-    is_new: bool
+    is_new: bool = Field(
+        description="True until 3 marked or hosted games; the app shows 'New' instead of the score"
+    )
 
 
 class GameDetailOut(GameOut):
@@ -66,9 +68,12 @@ class GameDetailOut(GameOut):
 
     host_name: str
     host_reputation: int
-    players: list[PlayerOut]
-    spots_left: int
-    effective_min_reputation: int
+    players: list[PlayerOut] = Field(description="Players who have joined, oldest signup first")
+    spots_left: int = Field(description="spots minus the players who have joined")
+    effective_min_reputation: int = Field(
+        description="The requirement that applies right now: min_reputation, or the fallback "
+        "once its window has started"
+    )
 
 
 def _check_sport(value: str) -> str:
@@ -94,13 +99,34 @@ class GameCreate(BaseModel):
     sport: str
     venue: str = Field(min_length=1, max_length=200)
     address: str = Field(min_length=1, max_length=300)
-    starts_at: datetime
+    starts_at: datetime = Field(
+        description="Kickoff, in the future, with a timezone offset, e.g. 2026-10-20T18:00:00-07:00"
+    )
     duration_minutes: int = Field(default=90, ge=15, le=480)
-    spots: int = Field(ge=2, le=30)
-    cost: Decimal = Field(default=Decimal(0), ge=0, max_digits=6, decimal_places=2)
-    min_reputation: int = Field(default=0, ge=0, le=MAX_MIN_REPUTATION)
-    fallback_min_reputation: int | None = Field(default=None, ge=0, le=MAX_MIN_REPUTATION)
-    fallback_hours_before_start: int | None = Field(default=None, ge=1, le=168)
+    spots: int = Field(ge=2, le=30, description="Player places on offer, not counting the host")
+    cost: Decimal = Field(
+        default=Decimal(0),
+        ge=0,
+        max_digits=6,
+        decimal_places=2,
+        description="Venue or drop-in fee per player, for information only. 0 = free",
+    )
+    min_reputation: int = Field(
+        default=0,
+        ge=0,
+        le=MAX_MIN_REPUTATION,
+        description="Lowest reputation allowed to join. 0 = anyone",
+    )
+    fallback_min_reputation: int | None = Field(
+        default=None,
+        ge=0,
+        le=MAX_MIN_REPUTATION,
+        description="Optional lower requirement that replaces min_reputation from "
+        "fallback_hours_before_start hours before kickoff. Leave both null for no drop",
+    )
+    fallback_hours_before_start: int | None = Field(
+        default=None, ge=1, le=168, description="When the fallback kicks in, hours before kickoff"
+    )
 
     _sport = field_validator("sport")(_check_sport)
     _starts_at = field_validator("starts_at")(_check_future)
