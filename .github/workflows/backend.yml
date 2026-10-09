@@ -46,7 +46,7 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://showup:showup@localhost:5432/showup_test
       TEST_DATABASE_URL: postgresql+psycopg://showup:showup@localhost:5432/showup_test
-      JWT_SECRET: ci-only-secret
+      JWT_SECRET: ci-only-secret-that-is-at-least-32-chars
 
     steps:
       - uses: actions/checkout@v7
