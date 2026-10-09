@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import Game, GameStatus, User
-from app.seed import GAMES, USERS, seed
+from app.seed import GAMES, SIGNUPS, USERS, seed
 
 UPCOMING = [g for g in GAMES if g[4] > 0 and g[9] != GameStatus.CANCELLED]
 UPCOMING_BASKETBALL = [g for g in UPCOMING if g[1] == "basketball"]
@@ -14,7 +14,7 @@ def test_seed_creates_rows_and_is_rerunnable(db: Session) -> None:
     first = seed(db)
     second = seed(db)
 
-    assert first == second == {"users": len(USERS), "games": len(GAMES)}
+    assert first == second == {"users": len(USERS), "games": len(GAMES), "signups": len(SIGNUPS)}
     assert db.scalar(select(func.count()).select_from(User)) == len(USERS)
     assert db.scalar(select(func.count()).select_from(Game)) == len(GAMES)
 

@@ -1,10 +1,10 @@
-# ruff: noqa: E501  (the GAMES table below is wider than 100 columns on purpose)
-"""Seed the database with demo users and games.
+# ruff: noqa: E501  (the tables below are wider than 100 columns on purpose)
+"""Seed the database with demo users, games and signups.
 
 Run from backend/:  uv run python -m app.seed
 
-Safe to run again: seed users are recognised by their email domain, and their games
-and accounts are deleted and recreated each time. Real users are never touched.
+Safe to run again: seed users are recognised by their email domain, and their games,
+signups and accounts are deleted and recreated each time. Real users are never touched.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -14,7 +14,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
-from app.models import Game, GameStatus, User
+from app.models import Game, GameStatus, Signup, SignupStatus, User
 
 SEED_DOMAIN = "seed.showup.local"
 
@@ -42,6 +42,22 @@ GAMES: list[tuple[int, str, str, str, int, int, int, str, int, GameStatus]] = [
     (4, "basketball", "Hillcrest Centre",       "4575 Clancy Loranger Way, Vancouver", -2, 18, 10, "0",     0, GameStatus.PLAYED),
     (1, "soccer",     "Burnaby Lake Fields",    "3677 Kensington Ave, Burnaby",         7, 11, 10, "0",     0, GameStatus.CANCELLED),
 ]
+
+# (game index into GAMES, user index into USERS, status). Hosts never sign up for their own game.
+SIGNUPS: list[tuple[int, int, SignupStatus]] = [
+    (0, 1, SignupStatus.JOINED),
+    (0, 2, SignupStatus.JOINED),
+    (0, 4, SignupStatus.JOINED),
+    (1, 0, SignupStatus.JOINED),
+    (2, 0, SignupStatus.JOINED),
+    (2, 3, SignupStatus.REMOVED),
+    (5, 1, SignupStatus.JOINED),   # badminton has 4 spots ...
+    (5, 2, SignupStatus.JOINED),
+    (5, 3, SignupStatus.JOINED),
+    (5, 4, SignupStatus.JOINED),   # ... and is now full
+    (6, 1, SignupStatus.JOINED),
+    (6, 2, SignupStatus.JOINED),
+]
 # fmt: on
 
 
@@ -49,7 +65,8 @@ def seed(db: Session) -> dict[str, int]:
     """Delete previous seed rows, insert fresh ones, commit. Returns row counts."""
     old_ids = db.scalars(select(User.id).where(User.email.like(f"%@{SEED_DOMAIN}"))).all()
     if old_ids:
-        db.execute(delete(Game).where(Game.host_id.in_(old_ids)))
+        db.execute(delete(Signup).where(Signup.user_id.in_(old_ids)))
+        db.execute(delete(Game).where(Game.host_id.in_(old_ids)))  # cascades to their signups
         db.execute(delete(User).where(User.id.in_(old_ids)))
 
     users = [
@@ -82,14 +99,23 @@ def seed(db: Session) -> dict[str, int]:
         for host, sport, venue, address, days, hour, spots, cost, min_rep, status in GAMES
     ]
     db.add_all(games)
+    db.flush()
+
+    signups = [
+        Signup(game_id=games[game].id, user_id=users[user].id, status=status)
+        for game, user, status in SIGNUPS
+    ]
+    db.add_all(signups)
     db.commit()
-    return {"users": len(users), "games": len(games)}
+    return {"users": len(users), "games": len(games), "signups": len(signups)}
 
 
 def main() -> None:
     with SessionLocal() as db:
         counts = seed(db)
-    print(f"seeded {counts['users']} users and {counts['games']} games")
+    print(
+        f"seeded {counts['users']} users, {counts['games']} games and {counts['signups']} signups"
+    )
 
 
 if __name__ == "__main__":
