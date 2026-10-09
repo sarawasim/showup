@@ -1,0 +1,33 @@
+# Render blueprint for the backend API. The frontend is hosted separately.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Two ways to use it:
+#   1. Render dashboard -> New -> Blueprint -> pick this repo. Render reads this file.
+#   2. Or create a Web Service by hand with the same settings (root directory "backend",
+#      runtime Docker, free plan, Oregon, health check /health) and the env vars below.
+#
+# Free plan facts: the service sleeps after 15 minutes without requests and takes
+# about a minute to wake on the next one. 750 free hours a month covers one service.
+
+services:
+  - type: web
+    name: showup-api
+    runtime: docker
+    repo: https://github.com/sarawasim/showup
+    branch: main
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Supabase session-pooler URL with the postgresql+psycopg:// prefix. Pasted in the dashboard, never committed.
+      - key: DATABASE_URL
+        sync: false
+      # Render generates a random value on first deploy.
+      - key: JWT_SECRET
+        generateValue: true
+      # Set to the frontend's public URL once it exists, as a JSON list, e.g. ["https://showup.vercel.app"].
+      - key: CORS_ORIGINS
+        sync: false
