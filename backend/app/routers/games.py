@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.deps import CurrentUser, DbDep
@@ -61,6 +61,11 @@ def _detail(db: DbDep, game_id: int) -> GameDetailOut:
     )
 
 
+def _escape_like(text: str) -> str:
+    r"""Treat %, _ and \ in user input as literal characters inside a LIKE pattern."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 # ---------- reading ----------
 
 
@@ -68,12 +73,23 @@ def _detail(db: DbDep, game_id: int) -> GameDetailOut:
 def list_games(
     db: DbDep,
     sport: str | None = Query(None, description="Only this sport, case-insensitive"),
+    location: str | None = Query(
+        None,
+        min_length=2,
+        max_length=100,
+        description="Only games whose venue or address contains this text, e.g. burnaby",
+    ),
     include_past: bool = Query(False, description="Also return games that already started"),
 ) -> list[Game]:
     """Upcoming games, soonest first. Cancelled games are never listed."""
     stmt = select(Game).where(Game.status != GameStatus.CANCELLED).order_by(Game.starts_at)
     if sport:
         stmt = stmt.where(func.lower(Game.sport) == sport.lower())
+    if location:
+        pattern = f"%{_escape_like(location)}%"
+        stmt = stmt.where(
+            or_(Game.venue.ilike(pattern, escape="\\"), Game.address.ilike(pattern, escape="\\"))
+        )
     if not include_past:
         stmt = stmt.where(Game.starts_at >= func.now())
     return list(db.scalars(stmt).all())
