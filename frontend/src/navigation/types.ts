@@ -11,8 +11,9 @@ export type MainTabParamList = {
 
 /** Logged-in stack: the tabs plus screens that push on top of them. */
 export type AppStackParamList = {
+  Splash: undefined;
   Login: undefined;
-  Signup: undefined;
+  Register: undefined;
   Tabs: NavigatorScreenParams<MainTabParamList>;
   Search: undefined;
   CreatePost: undefined;
