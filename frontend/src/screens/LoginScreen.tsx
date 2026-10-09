@@ -13,7 +13,7 @@ const SigninScreen = ({ navigation }: AppScreenProps<"Login">) => {
 		<SafeAreaView style={styles.screen}>
 			<View style={{ alignSelf: "center" }}>
 				<Text style={styles.titleText}>Login</Text>
-				<Text style={styles.titleText}>
+				<Text style={styles.subtitleText}>
 					Enter your email and password to log in
 				</Text>
 			</View>
@@ -59,6 +59,12 @@ const getStyles = (theme: CustomTheme) =>
 			fontWeight: 600,
 			color: theme.colors.text,
 			fontSize: 32,
+			textAlign: "center",
+		},
+		subtitleText: {
+			fontWeight: 400,
+			color: theme.colors.textMuted,
+			fontSize: 16,
 			textAlign: "center",
 		},
 		loginButton: {
