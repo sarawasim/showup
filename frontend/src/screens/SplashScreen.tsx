@@ -19,15 +19,13 @@ const SplashScreen = ({ navigation }: AppScreenProps<"Splash">) => {
 			</View>
 			<View style={{ gap: 15 }}>
 				<Button
-					buttonStyle={styles.registerButton}
 					onPress={() => navigation.navigate("Register")}
-					textStyle={styles.buttonText}
+					variant="primary"
 				>
 					Register
 				</Button>
 				<Button
-					buttonStyle={styles.loginButton}
-					textStyle={styles.buttonText}
+					variant="outline"
 					onPress={() => navigation.navigate("Login")}
 				>
 					Login
@@ -52,26 +50,6 @@ const getStyles = (theme: CustomTheme) =>
 		subtitle: {
 			fontWeight: 400,
 			color: theme.colors.textMuted,
-			fontSize: 16,
-			textAlign: "center",
-		},
-		registerButton: {
-			borderWidth: 1,
-			borderRadius: 16,
-			padding: 18,
-			alignItems: "center",
-			backgroundColor: "#4EABE9",
-		},
-		loginButton: {
-			borderWidth: 1,
-			borderColor: "#8E8E8E",
-			borderRadius: 16,
-			padding: 18,
-			alignItems: "center",
-		},
-		buttonText: {
-			fontWeight: 600,
-			color: theme.colors.text,
 			fontSize: 16,
 		},
 	});

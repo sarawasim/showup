@@ -19,7 +19,13 @@ const SigninScreen = ({ navigation }: AppScreenProps<"Login">) => {
 			</View>
 			<View style={{ display: "flex", gap: 25 }}>
 				<View style={{ display: "flex", gap: 10 }}>
-					<FormInput label="Email" placeholder="Email" />
+					<FormInput
+						label="Email"
+						placeholder="Email"
+						autoCapitalize="none"
+						keyboardType="email-address"
+						autoCorrect={false}
+					/>
 					<FormInput
 						label="Password"
 						placeholder="Password"
@@ -30,8 +36,7 @@ const SigninScreen = ({ navigation }: AppScreenProps<"Login">) => {
 					/>
 				</View>
 				<Button
-					buttonStyle={styles.loginButton}
-					textStyle={styles.loginButtonText}
+					variant="primary"
 					onPress={() => navigation.navigate("Register")}
 				>
 					Login
@@ -66,17 +71,5 @@ const getStyles = (theme: CustomTheme) =>
 			color: theme.colors.textMuted,
 			fontSize: 16,
 			textAlign: "center",
-		},
-		loginButton: {
-			borderWidth: 1,
-			borderRadius: 16,
-			padding: 18,
-			alignItems: "center",
-			backgroundColor: "#4EABE9",
-		},
-		loginButtonText: {
-			fontWeight: 600,
-			color: theme.colors.text,
-			fontSize: 16,
 		},
 	});
