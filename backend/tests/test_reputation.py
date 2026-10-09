@@ -131,7 +131,7 @@ def test_roster_shows_games_played_and_new(client: TestClient, db: Session) -> N
 # ---------- the host's minimum ----------
 
 
-def test_minimum_above_95_is_rejected(
+def test_minimum_above_100_is_rejected(
     client: TestClient, db: Session, auth_headers: Headers
 ) -> None:
     seed(db)

@@ -30,8 +30,8 @@ It is recomputed from the `attendance` table every time a host marks a game and 
 1. **Newcomers start at 100 and are labelled "New"** until they have three marked or hosted
    games. Hosts see the score, the games played count and the label together, so a fresh
    100 and a veteran 100 are not confused. This is the initial access route the feedback asked for.
-2. **A host may require at most 95.** A requirement of 100 would exclude anyone who ever
-   slipped once, including players more reliable than the host.
+2. **A host may require anything up to 100.** The team chose no cap: a host who asks for 100
+   gets a smaller pool, and the fallback in rule 3 is the way out of an empty roster.
 3. **One-step fallback.** A host may set a lower requirement that applies from N hours before
    kickoff (`fallback_min_reputation`, `fallback_hours_before_start`). It is evaluated when a
    player tries to join; nothing runs in the background. Hosts can also edit the requirement

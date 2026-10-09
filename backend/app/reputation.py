@@ -22,8 +22,8 @@ CUSHION = 3
 NEW_PLAYER_GAMES = 3
 # A host can mark, change or be disputed on attendance for this long after kickoff.
 MARK_WINDOW_DAYS = 7
-# The highest minimum a host may ask for. 100 would lock out anyone who ever slipped once.
-MAX_MIN_REPUTATION = 95
+# The highest minimum a host may ask for. Team decision 2026-10-08: no cap below the scale's top.
+MAX_MIN_REPUTATION = 100
 
 
 def compute(shows: int, marked: int) -> int:

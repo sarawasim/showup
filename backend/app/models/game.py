@@ -28,10 +28,9 @@ class Game(Base):
     __table_args__ = (
         CheckConstraint("spots BETWEEN 2 AND 30", name="ck_games_spots_range"),
         CheckConstraint("cost >= 0", name="ck_games_cost_not_negative"),
-        # 95, not 100: a requirement of 100 would exclude anyone who ever slipped once.
-        CheckConstraint("min_reputation BETWEEN 0 AND 95", name="ck_games_min_reputation_range"),
+        CheckConstraint("min_reputation BETWEEN 0 AND 100", name="ck_games_min_reputation_range"),
         CheckConstraint(
-            "fallback_min_reputation IS NULL OR fallback_min_reputation BETWEEN 0 AND 95",
+            "fallback_min_reputation IS NULL OR fallback_min_reputation BETWEEN 0 AND 100",
             name="ck_games_fallback_min_reputation_range",
         ),
         CheckConstraint(

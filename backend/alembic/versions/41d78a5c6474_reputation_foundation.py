@@ -45,15 +45,11 @@ def upgrade() -> None:
         ),
     )
 
-    # The host's minimum is now capped at 95, and the new columns get their ranges.
-    op.drop_constraint("ck_games_min_reputation_range", "games", type_="check")
-    op.create_check_constraint(
-        "ck_games_min_reputation_range", "games", "min_reputation BETWEEN 0 AND 95"
-    )
+    # Ranges for the new columns. min_reputation keeps its existing 0 to 100 constraint.
     op.create_check_constraint(
         "ck_games_fallback_min_reputation_range",
         "games",
-        "fallback_min_reputation IS NULL OR fallback_min_reputation BETWEEN 0 AND 95",
+        "fallback_min_reputation IS NULL OR fallback_min_reputation BETWEEN 0 AND 100",
     )
     op.create_check_constraint(
         "ck_games_fallback_hours_range",
@@ -69,10 +65,6 @@ def downgrade() -> None:
     op.drop_constraint("ck_games_duration_range", "games", type_="check")
     op.drop_constraint("ck_games_fallback_hours_range", "games", type_="check")
     op.drop_constraint("ck_games_fallback_min_reputation_range", "games", type_="check")
-    op.drop_constraint("ck_games_min_reputation_range", "games", type_="check")
-    op.create_check_constraint(
-        "ck_games_min_reputation_range", "games", "min_reputation BETWEEN 0 AND 100"
-    )
     op.drop_column("games", "updated_at")
     op.drop_column("games", "fallback_hours_before_start")
     op.drop_column("games", "fallback_min_reputation")
