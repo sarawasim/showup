@@ -8,7 +8,7 @@ import { ConfirmPostScreen } from '../screens/ConfirmPostScreen';
 import { GameDetailsScreen } from '../screens/GameDetailsScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import SplashScreen from '../screens/SplashScreen';
-import SigninScreen from '../screens/LoginScreen';
+import LoginScreen from '../screens/LoginScreen';
 
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -17,7 +17,7 @@ export function AppNavigator() {
   return (
       <Stack.Navigator initialRouteName="Splash" screenOptions={stackScreenOptions}>
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={SigninScreen} options={{ title: 'Login'}}/>
+        <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login'}}/>
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Register' }} />
         <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} />
